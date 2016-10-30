@@ -1,127 +1,109 @@
-title: Rakudo and NQP Internals
-subtitle: The guts tormented implementers made
-author: Jonathan Worthington
+标题: Rakudo and NQP Internals
+子标题: The guts tormented implementers made
+作者: Jonathan Worthington
 
-## About This Course
+## 关于这个课程
 
-Perl 6 is a large language, incorporating many features that are demanding to
-implement correctly.
+Perl 6 是一种大型语言，包含许多要求正确实现的功能。
 
-It's easy for such a software project to be drowned by unmanaged complexity.
-Earlier phases of the Rakudo and NQP projects have suffered in this way, as we
-learned - the hard way - about the complexities that arose and could spread
-unchecked over the implementation.
+这样的软件项目很容易被难控制的复杂性淹没。
+Rakudo 和 NQP 项目的早期阶段已经遭受了这样的困难，因为我们学到了 - 艰难的方式 - 关于复杂性，出现并可能在实现过程中不受限制地扩散。
 
-This course will teach you how to work with Rakudo and NQP internals. Encoded
-in their design is a wealth of learning, built up over years, about how (and
-how not) to write a Perl 6 implementation. Thus, this course will also teach
-you why things are the way they are.
+本课程将教您如何使用 Rakudo 和 NQP 内部。 在他们的设计中编码是一个大量学习的过程，关于如何（以及如何不）写一个 Perl 6 实现, 这个过程持续了多年。 因此，本课程还将教你事情的来龙去脉。
 
-## About The Teacher
+## 关于讲师
 
-* Computer Science background
-* Chose to travel the world and help implement Perl 6 instead of doing a PhD
-* There's more than one way to get "Permanent head Damage" `:-)`
-* Somehow got hired at Edument AB along the way, as a teacher/consultant
-* Rakudo Perl 6 core developer since 2008
-* Architect of 6model, MoarVM and various aspects of NQP and Rakudo
+* 计算机科学背景
+* 选择旅行世界,并帮助实现 Perl 6, 而不是做博士
+* 有不止一种方法来获得"永久头部损伤" `:-)`
+* 不知何故在 Edument AB 被聘用, 作为讲师/顾问
+* 从 2008 年开始成为 Rakudo Perl 6 核心开发者
+* 6model, MoarVM, NQP 和 Rakudo 各个方面的缔造者
 
-## Course overview - Day 1
+## 课程大纲 - 第一天
 
-* The eagle's eye view: Compilers, and the NQP/Rakudo Architecture
-* The NQP Language
-* The compilation pipeline
+* 鹰的视角: 编译器和 NQP/Rakudo 架构
+* NQP 语言
+* 编译管道
 * QAST
-* Exploring nqp:: ops
+* 探索 nqp::ops
 
-## Course overview - Day 2
+## 课程大纲 - 第二天
 
 * 6model
-* Bounded Serialization and Module Loading
-* The regex and grammar engine
-* The JVM backend
-* The MoarVM backend
+* 有界序列化和模块加载
+* 正则表达式和 grammar 引擎
+* JVM 后端
+* MoarVM 后端
 
-# The eagle's eye view
+# 鹰的视角
 
-*Compilers, and the NQP/Rakudo Architecture*
+*编译器和 NQP/Rakudo 架构*
 
-## What compilers do
+## 编译器做什么
 
-Compilers are really "just" translators
+编译器真的是"只是"翻译。
 
-Translate a high level language (such as Perl 6) into a low level one (such
-as JVM bytecode)
+编译器把高级语言 (例如 Perl 6) 翻译成低级语言 (例如 JVM 字节码)。
 
-![20%](eps/input-compiler-output.eps)
+![input-compiler-output](https://github.com/ohmycloud/rakudo-and-nqp-internals-course-zh/blob/master/images/input-compiler-output.svg)
 
-Take flat input (text) and produce flat output (text or binary), but **the
-insides are rich in data structures**
+接收直截了当的输入（文本）并产生直截了当的输出（文本或二进制），但**内部的数据结构很丰富**
 
-Dealing with stuff as strings is, generally, a last resort
+像字符串那样处理东西，通常是最后的手段
 
-## What runtimes do
+## 运行时做什么
 
-To run a language like Perl 6 involves more than just translating it to low
-level code. Additionally, it needs **runtime support** to provide:
+运行像 Perl 6 这样的语言不仅仅是将它转换为低级代码。 此外, 它需要**运行时支持**来提供：
 
-* Memory management
-* I/O, IPC, OS interaction
-* Concurrency
-* Dynamic optimization
+* 内存管理
+* I/O, IPC, OS 交互
+* 并发
+* 动态优化
 
-## Building the things we need to build the thing
+## 构建我们需要的东西来构建东西
 
-Various attempts have been made to build Perl 6 out of existing compiler
-construction technologies. Early designs for the compiler were at least partly
-based on conventional assumptions.
+我们已经以现有的编译器构造技术进行了各种尝试来构建 Perl 6。 编译器的早期设计至少有一部分是基于常规假设的。
 
-Such attempts were informative, but haven't worked out too well in the long
-run.
+这样的尝试是信息性的，但从长远来看还不够好。
 
-Perl 6 presents some interesting challenges...
+Perl 6 提出了一些有趣的挑战...
 
-## Perl 6 is parsed using Perl 6
+## Perl 6 是使用 Perl 6 解析的
 
-The Perl 6 standard grammar is written in Perl 6. It depends on...
+Perl 6 的标准文法(grammar)是用 Perl 6 写的。它依赖于...
 
-* Transitive **longest token matching** (we'll see more on this later)
-* Being able to switch back and forth between languages (main language,
-  regex language, quoting language...)
-* Being able to **derive new languages dynamically** (new operators, custom
-  quoting constructs)
-* Seamless integration between bottom-up expression parsing and top-down
-  parsing for larger constructs
-* Keeping various bits of state around for **awesome error reporting**
+* 可传递的 **最长 token 匹配** (我们会在之后看到更多关于它的东西)
+* 能够在不同语言之间来回切换 (主语言, 正则表达式语言, 引用(quoting)语言)
+* 能够**动态地派生出新语言** (新运算符，自定义引用构造)
+* 在自下而上的表达式解析和自顶向下的更大的结构解析之间无缝集成
+* 保持**令人惊叹的错误报告**的各种状态
 
-All of which essentially represent a new paradigm in parsing.
+所有这些本质上代表了解析中的新范例。
 
-## Not statically typed or dynamically typed
+## 非静态类型或动态类型
 
-Perl 6 is a **gradually typed** language.
+Perl 6 是一种 **渐进类型化**的语言。
 
     my int $distance = distance-between('Lund', 'Kiev');
     my int $time = prompt('Travel time: ').Int;
     say "Average speed: { $distance / $time }";
 
-We want to make use of knowing that `$distance` and `$time` are native integers
-to produce better code than if we had no knowledge of the types (should just be
-a native division instruction in the output code).
+我们想利用 `$distance` 和 `$time` 原生整数来产生更好的代码，如果我们不知道类型（应该只是输出代码中的原生除法指令）。
 
-## Compile-time and runtime blur
+## 模糊编译时和运行时
 
-Runtime can do some compile-time:
+运行时可以做一些编译时:
 
     EVAL slurp @demos[$n];
 
-Compile-time can do some runtime:
+编译时可以做一些运行时:
 
     my $comp-time = BEGIN now;
 
-**Notice how the compile time computation's result must be persisted until
-runtime, which may have a process boundary between them!**
+**注意编译时计算的结果必须持久化直到运行时，这它们之间可能有一个处理(process)边界!**
 
-## NQP as a language
+## NQP 作为语言
 
 The Perl 6 grammar clearly needed to be expressed in Perl 6. This would in
 turn need to integrate into the rest of the compiler. Writing the whole lot in
