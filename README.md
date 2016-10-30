@@ -13,7 +13,7 @@
 
 ### 先决条件
 
-对 Perl 6 语言的有一定的了解，并且最好还有使用 NQP 的经验。
+对 Perl 6 语言有一定的了解，并且最好还有使用 NQP 的经验。
 
 ### 第一天
 
@@ -134,7 +134,7 @@
 
 * 一个 `make` 程序 (Windows 上的 `nmake` 也能很好地工作)
 * Perl 5.10 或以上
-* Pandoc (see http://johnmacfarlane.net/pandoc/)
+* Pandoc (参见 http://johnmacfarlane.net/pandoc/)
 * 你的 path 路径中有 `latex`, `dvips` 和 `ps2pdf` 命令
 
 在 Linux 上，您可以执行以下操作：
