@@ -1,26 +1,19 @@
-# Rakudo and NQP Internals Workshop
+# Rakudo 和 NQP 内部研讨会
 
-## What's in here?
+## 这儿有什么?
 
-This repository contains course material for a workshop on Rakudo and NQP
-internals. In here you'll find:
+该仓库包含了关于 Rakudo 和 NQP 内部研讨会的课程材料。 在这里你会发现：
 
-* The original source (build instructions below)
+* 原始来源 (下面有构建说明)
 * [Pre-built PDFs](http://edumentab.github.io/rakudo-and-nqp-internals-course/)
 
-## Abstract
+## 摘要
 
-This intensive 2-day workshop takes a deep dive into many areas of the Rakudo
-Perl 6 and NQP internals, mostly focusing on the backend-agnostic parts but
-with some coverage of the JVM and future MoarVM backends also. During the
-course, participants will build their own small compiler, complete with a
-simple class-based object system, to help them understand how the toolchain
-works.
+这个密集的为期两天的研讨会深入探讨了 Rakudo Perl 6 和 NQP 内部的许多领域，主要集中在后端不可知的部分，但是涵盖了一些 JVM 和未来 MoarVM 的东西。 在课程中，参与者将构建他们自己的小编译器，完成一个简单的基于类的对象系统，以帮助他们了解工具链的工作原理。
 
-### Prerequisites
+### 先决条件
 
-A reasonable knowledge of the Perl 6 language and, preferably, a little
-experience working with NQP also.
+对 Perl 6 语言的有一定的了解，并且最好还有使用 NQP 的经验。
 
 ### 第一天
 
@@ -32,8 +25,8 @@ experience working with NQP also.
 * NQP 作为语言
 * NQP 作为编译器构建工具链
 * QAST
-* nqp:: op 集合
-* Bootstrapping in a nutshell
+* nqp::op 集合
+* 极其简单的引导
 * Rakudo 如何使用 NQP
 
 #### NQP 语言
@@ -42,10 +35,10 @@ experience working with NQP also.
 * 字面值, 变量, 控制流
 * 子例程, pointy blocks, 闭包语义
 * 类, 属性, 方法
-* 正则表达式和grammars
+* 正则表达式和 grammars
 * Roles
 * 多重分派
-* 内置和 nqp:: ops
+* 内置和 nqp::ops
 * 异常处理
 * 限制和与完整 Perl 6 的其它差异
 * 缺点
@@ -73,7 +66,7 @@ experience working with NQP also.
 * Block 引用: QAST::BVal
 * 对象引用: QAST::WVal
 * The backend escape hatch: QAST::VM
-* At the top: QAST::CompUnit
+* 在顶部: QAST::CompUnit
 
 #### 探索 nqp:: ops
 
@@ -97,7 +90,7 @@ experience working with NQP also.
 * STables
 * 知其所以然, 这一切的根本
 * 从头开始构建一个简单的对象系统
-* Adding objects to our little language, using a World
+* 使用 World 类为我们的小语言添加对象
 * 方法缓存
 * 类型检查
 * Boolification
@@ -114,7 +107,7 @@ experience working with NQP also.
 * 什么是"有界的"
 * Repossession, 冲突和其它令人讨厌的东西
 * 与序列化上下文相关的 nqp:: ops
-* The World, revisisted
+* 重访 World 类
 * 模块加载的工作原理
 
 #### 正则表达式和 grammar 引擎
@@ -135,29 +128,22 @@ experience working with NQP also.
 * MoarVM 概述
 * QAST 到 MAST 的翻译
 
-## Build Instructions
+## 构建说明
 
-Run the `Makefile` to build the slides for the two days. To do this, you will
-need:
+运行 `Makefile` 来构建这两天的幻灯片。 为此，您需要：
 
-* A `make` program (`nmake` on Windows works just fine too)
-* Perl 5.10 or above
+* 一个 `make` 程序 (Windows 上的 `nmake` 也能很好地工作)
+* Perl 5.10 或以上
 * Pandoc (see http://johnmacfarlane.net/pandoc/)
-* The `latex`, `dvips` and `ps2pdf` commands in your path
+* 你的 path 路径中有 `latex`, `dvips` 和 `ps2pdf` 命令
 
-On Linux you can do something like:
+在 Linux 上，您可以执行以下操作：
 
     apt-get install texlive
     apt-get install pandoc
 
-On Windows, there is a Pandoc installer from the URL mentioned above, then
-install MiKTeX for the other commands.
+在 Windows 上，有一个上面提到的 URL 中的 Pandoc 安装程序，然后安装 MiKTeX 的其他命令。
 
-## Course Delivery
+## 课程发行
 
-This course material is made available by Edument AB under a Creative Commons
-license (see LICENSE file) to support the Perl 6 development community. It is,
-however, best experienced live! If you're interested in having this material
-delivered by an experienced instructor at a location of your choice, feel free
-to contact us at info@edument.se. To learn more about Edument and our other
-awesome courses, see http://edument.se/.
+本课程资料由 Edument AB 根据知识共享许可证（见LICENSE文件）提供，以支持 Perl 6 开发社区。 但是，这是最好的现场经验！ 如果您有兴趣在您选择的地方由有经验的讲师发行这种材料，请随时通过 info@edument.se 与我们联系。 要了解更多关于Edument和我们的其他令人惊叹的课程，请参阅 http://edument.se/。
