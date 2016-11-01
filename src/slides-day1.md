@@ -272,10 +272,9 @@ Dynamic variables are also supported:
 
     my @*blocks;
 
-## Binding
+## 绑定
 
-NQP does not offer the `=` assignment operator. Only the `:=` binding operator
-is provided. This frees NQP from the complexity of Perl 6 container semantics.
+NQP 没有提供 `=` 赋值操作符。只提供了 `:=` 绑定操作符。这使 NQP 免于 Perl 6 容器语义的复杂性。
 
 Here's a simple scalar example:
 
@@ -283,11 +282,11 @@ Here's a simple scalar example:
 
 ## Binding and arrays
 
-Note that binding has **item assignment precedence**, so you can not write:
+注意绑定拥有**item 赋值优先**, 所以你不可以这样写:
 
     my @states := 'start', 'running', 'done';    # Wrong!
 
-Instead, this must be expressed as one of:
+相反, 这应该被表示为下面的其中之一:
 
     my @states := ['start', 'running', 'done'];  # Fine
     my @states := ('start', 'running', 'done');  # Same thing
@@ -441,7 +440,7 @@ attributes, since that's all we have.
 
 ## Roles (1)
 
-NQP supports roles. Like classes, roles can have attributes and methods.
+NQP 支持 roles. 像类那样, roles 能拥有属性和方法。
 
     role QAST::CompileTimeValue {
         has $!compile_time_value;
@@ -604,8 +603,7 @@ the entire file to be lines containing an entry or simply nothing.
         $
     }
 
-Note that in Perl 6, square brackets are a non-capturing group (the Perl 5
-`(?:...)`), not a character class.
+注意在 Perl 6 中, 方括号是非捕获组(Perl 5 的 `(?:...)`), 而非字符类.
 
 ## Trying our grammar
 
@@ -624,16 +622,17 @@ We can try our grammar out by calling the `parse` method on it. This returns a
 Each call to a rule yields a match object, and the `<entry>` call syntax will
 capture it into the match object.
 
-Since we matched many entries we get an array under the `entry` key in the match
-object.
+每个 rule 调用都产生一个 match 对象, `<entry>` 调用语法会把它捕获到 match 对象中。
 
-Thus, we can do loop over it to get each of the entries:
+因为我们匹配了很多 **entrie**s, 所以我们在 match 对象中的 `entry` 键下面得到一个数组。
+
+因此, 我们能够遍历它以得到每一个 entry:
 
     for $m<entry> -> $entry {
         say("Key: {$entry<key>}, Value: {$entry<value>}");
     }
 
-## Tracing our grammar
+## 追踪我们的 grammar
 
 NQP comes with some built-in support for tracing where grammars go. It's not a
 full-blown debugger, but it can be helpful to see how far a grammar gets before
@@ -654,16 +653,15 @@ And produces output like:
 
 ## token vs. rule
 
-When we use `rule` in place of `token`, any whitespace after an atom is turned
-into a **non-capturing** call to `ws`. That is:
+当我们使用 `rule` 代替 `token` 时, 原子后面的任何空白被转换为对 `ws` 的**非捕获**调用。即:
 
     rule entry { <key> '=' <value> }
 
-Is the same as:
+等价于:
 
     token entry { <key> <.ws> '=' <.ws> <value> <.ws> } # . = non-capturing
 
-We inherit a default `ws`, but we can supply our own too:
+我们继承了一个默认的 `ws`, 但是我们也能提供我们自己的:
 
     token ws { \h* }
 
@@ -697,7 +695,7 @@ Last but not least here is the section token:
         <entries>
     }
 
-The `~` syntax is cute. The first line is like:
+这个 `~` 语法很漂亮. 第一行就像这样:
 
     '[' <key> ']' \n
 
@@ -734,12 +732,11 @@ section.
 
 ## Actions example: entries
 
-Action methods take the match object of the just-matched rule as a parameter.
-It is convenient to put it into `$/` so we can use the `$<entry>` sugar (which
-maps to `$/<entry>`).
+Action 方法将刚刚匹配过的 rule 的 Match 对象作为参数。
+把这个 Match 对象放到 `$/` 里很方便, 所以我们能够使用 `$<entry>` 语法糖 (它映射到 `$/<entry>` 上)。这个语法糖看起来像普通的标量, 第一眼看上去的时候有点懵, 再看一眼发现它有一对 `<>` 后环缀, 而这正是散列中才有的, `<entry>` 相当于 `{'entry'}`, 不过前者更漂亮。 
 
     class INIFileActions {
-        method entries($/) {
+        method entries($/) { # Match Object 放在参数 $/ 中
             my %entries;
             for $<entry> -> $e {
                 %entries{$e<key>} := ~$e<value>;
@@ -748,14 +745,12 @@ maps to `$/<entry>`).
         }
     }
 
-Finally, **`make`** attaches the produced hash to `$/`. This is so the `TOP`
-action method will be able to retrieve it while building the top-level hash.
+
+最后, **`make`** 将生成的散列**附加**到 `$/` 上。这就是为什么 'TOP` action 方法能够在构建顶级哈希时检索它。
 
 ## Actions example: TOP
 
-The `TOP` action method builds the top-level hash out of the hashes made by
-the `entries` action method. While `make` attaches something to `$/`, the
-**`.ast`** method retrieves what was attached to some other match object.
+`TOP` action 方法在由 `entries` action 方法创建的散列中构建顶级散列。当 `make` 将某个东西附加到 `$/` 上时, **`.ast`** 方法检索附加到其他匹配对象上的东西。
 
     method TOP($/) {
         my %result;
@@ -766,17 +761,16 @@ the `entries` action method. While `make` attaches something to `$/`, the
         make %result;
     }
 
-Thus, the top-level hash gets the hashes produced by the `entries` action
-method installed into it, by section name.
+Thus, the top-level hash gets the hashes produced by the `entries` action method installed into it, by section name.
+因此, 顶层散列通过 section 名获取到由安装到其中的`entries` action 方法产生的散列。
 
-## Actions example: parsing with actions
+## Actions example: 用 actions 解析
 
-The actions are passed as a named parameter to `parse`:
+actions 作为具名参数传递给 `parse`:
 
     my $m := INIFile.parse($to_parse, :actions(INIFileActions.new));
 
-The result hash can be obtained from the resulting match object using the
-`.ast`, as we already saw.
+结果散列可以使用 `.ast` 从结果匹配对象中获得, 正如我们已经看到的。
 
     my %sections := $m.ast;
     for %ini -> $sec {
@@ -786,9 +780,9 @@ The result hash can be obtained from the resulting match object using the
         }
     }
 
-## Actions example: output
+## Actions example: 输出
 
-The dumping code on the previous slide produces output as follows:
+上一张幻灯片上的转储代码产生如下输出：
 
     Section _
         name: Animal Facts
@@ -802,18 +796,15 @@ The dumping code on the previous slide produces output as follows:
 
 ## Exercise 2
 
-A chance to have a little practice with grammars and actions.
+使用 gramamrs 和 actions 进行小练习的一次机会。
 
-The goal is to parse the text format of the Perl 6 IRC log; for example, see
-http://irclog.perlgeek.de/perl6/2013-07-19/text
+目标是解析 Perl 6 IRC 日志的文本格式; 例如, 参见 http://irclog.perlgeek.de/perl6/2013-07-19/text
 
-## Another example: SlowDB
+## 另外一个例子: SlowDB
 
-Parsing INI files is a nice introductory example, but feels a long way from a
-compiler. As a step in that direction, we'll build a small, stupid, in-memory
-database with a query interpreter.
+解析 INI 文件这个例子是一个很好的开端, 但是离编译器还差的远。作为那个方向的进一步深入, 我们会使用查询解释器创建一个小的, 无聊的, 在内存中的数据库。 
 
-It should work something like this:
+它应该像下面这样工作:
 
     INSERT name = 'jnthn', age = 28
     [
@@ -826,9 +817,9 @@ It should work something like this:
     SELECT name WHERE age = 50
     Nothing found
 
-## The query parser (1)
+## 查询解释器 (1)
 
-We either parse an `INSERT` or `SELECT` query.
+我们解析 `INSERT` 或 `SELECT` 查询的任意之一.
 
     token TOP {
         ^ [ <insert> | <select> ] $
@@ -843,45 +834,42 @@ We either parse an `INSERT` or `SELECT` query.
         [ 'WHERE' <pairlist> ]?
     }
 
-Note that `:s` turns on auto-`<.ws>` insertion.
+注意 `:s` 开启了自动 `<.ws>` 插入.
 
 ## The query parser (2)
 
-The `pairlist` and `keylist` rules are defined as follows.
+`pairlist` 和 `keylist` rules 的定义如下:
 
     rule pairlist { <pair>+ % [ ',' ] }
     rule pair     { <key> '=' <value>  }
     rule keylist  { <key>+ % [ ',' ] }
     token key     { \w+ }
 
-The interesting new syntax here is **`%`**. It attaches to the last quantifier,
-and indicates that something (in this case, a comma) should come between each
-of the quantified elements.
+这儿有一个有意思的新的语法是 **`%`**. 它附件到末尾的量词上, 表明某些东西(这里是逗号)应该出现在每个量词化的元素**之间**。
 
+逗号字面值周围的方括号是为了确保 `<.ws>` 调用被生成为分割符的一部分。
 The square brackets around the comma literal are to ensure `<.ws>` calls are
 generated as part of the separator.
 
 ## The query parser (3)
 
-Finally, here is how values can be parsed.
+最后, 这儿是关于值是这样被解析的。
 
     token value { <integer> | <string> }
     token integer { \d+ }
     token string  { \' <( <-[']>+ )> \' }
 
-Notice the use of the **`<(` and `)>`** syntax. These indicate the limits of
-what should be captured by the `string` token overall, meaning that the quote
-characters don't end up being captured.
+注意 **`<(`** 和 **`)>`** 语法的使用。这些表明通过 `string` token 整体应该捕获什么的限制。意味着引号字符不会被捕获
 
-## Alternations and LTM (1)
+## Alternations 和 LTM (1)
 
-Recall the top rule:
+回忆一下 top rule:
 
     token TOP {
         ^ [ <insert> | <select> ] $
     }
 
-If we trace the parsing of a `SELECT` query, we see something like this:
+如果我们追踪 `SELECT` 查询的解析, 我们会看到像下面这样的东西:    
 
     Calling parse
       Calling TOP
@@ -890,18 +878,20 @@ If we trace the parsing of a `SELECT` query, we see something like this:
           Calling keylist
 
 So how did it know not to bother trying `<insert>`?
+所以它怎么知道不去麻烦尝试 `<insert>` 呢?
 
-## Alternations and LTM (2)
+## Alternations 和 LTM (2)
 
-The answer is **Transitive Longest Token Matching**. The grammar engine builds
-an NFA (state machine) that, upon encountering an alternation, sorts the
+答案是**可传递的最长Token匹配**(Transitive Longest Token Matching). grammar 引擎创建了一个 NFA (状态机), 一旦遇到一个备选分支(alternation), 就按照这个**备选分支能够匹配到的字符数**对分支进行排序。然后 Grammar 引擎在这些分支中首先尝试匹配最多字符的那个, 而不麻烦那些它认为不可能的分支。
+The answer is ****. The grammar engine builds
+an NFA (state machine) that, upon encountering an , sorts the
 branches by the number of characters they would match. It then tries them
 longest first, not bothering with those it realizes are impossible.
 
-## Alternations and LTM (3)
+## Alternations 和 LTM (3)
 
-It doesn't just look at a rule in isolation. Instead, it **considers subrule
-calls transitively**. This means entire call chains that lead to something
+Gramamr 引擎不会仅仅孤立地看一个 rule。相反, 它 **可传递性地考虑 subrule 调用** (considers subrule calls transitively). 这意味着导致某种不可能的整个调用链可以被忽略。
+It doesn't just look at a rule in isolation. Instead, it ****. This means entire call chains that lead to something
 impossible can be eliminated.
 
 ![20%](eps/ltm-transformation.eps)
@@ -911,16 +901,15 @@ or a call to the default `ws` rule) or recursive subrule calls.
 
 ## A slight pain point
 
-One annoyance we have is that our `TOP` action method ends up looking like this:
+令我们讨厌的一件事情就是我们的 `TOP` action 方法最后看起来像这样:
 
     method TOP($/) {
         make $<select> ?? $<select>.ast !! $<insert>.ast;
     }
 
-It's easy to see how this will become painful to maintain once we add `UPDATE`
-and `DELETE` queries. It's even more painful if the grammar is subclassed.
+显而易见, 一旦我们添加 `UPDATE` 和 `DELETE` 查询,  维护起来将会多么痛苦
 
-Our `value` action method is similar:
+我们的 `value` action 方法类似:
 
     method value($/) {
         make $<integer> ?? $<integer>.ast !! $<string>.ast;
@@ -928,32 +917,31 @@ Our `value` action method is similar:
 
 ## Protoregexes
 
-The answer to our woes is **protoregexes**. They provide **a more extensible
+The answer to our woes is . They provide **a more extensible
 way to express an alternation**.
+我们痛苦的答案是 **protoregexes**。 它们提供了**一个更可扩展的方式来表达备选分支**
 
     proto token value {*}
     token value:sym<integer> { \d+ }
     token value:sym<string>  { \' <( <-[']>+ )> \' }
 
-Essentially, we introduce a new syntactic category, `value`, and then define
+本质上, 我们引入了一个新的语法类别, `value`, 然后定义这个类别下不同的案例(cases)。一个像 `value` 这样的调用会使用 LTM 来对候选者进行排序和尝试 - 就像备选分支所做的那样。
+Essentially, we introduce a new syntactic category, `value`, and then defincasese
 difference cases of it. A call like `<value>` will use LTM to sort and try the
 candidates - just like an alternation did.
 
-## Protoregexes and action methods (1)
+## Protoregexes 和 action 方法 (1)
 
-Back in the actions class, we need to update our action methods to match the
-names of the rules:
+回到 actions 类, 我们需要更新我们的 action 方法来匹配 rules 的名字:
 
     method value:sym<integer>($/) { make ~$/ }
     method value:sym<string>($/)  { make ~$/ }
 
-However, **we do not need an action method for `value` itself**. Anything that
-looks at `$<value>` will be provided with the match object from the successful
-candidate - and thus `$<value>.ast` will obtain the correct thing.
+然而, 我们**不需要 `value` 自身这个 action 方法**。任何查看 `$<value>` 的东西会被提供一个来自成功候选者的匹配对象 - 并且 `$<value>.ast` 因此会获得正确的东西。
 
 ## Protoregexes and action methods (2)
 
-For example, after we refactor queries:
+例如, 在我们重构查询之后:
 
     token TOP { ^ <query> $ }
     
@@ -966,14 +954,15 @@ For example, after we refactor queries:
         [ 'WHERE' <pairlist> ]?
     }
 
-The `TOP` action method can then simply be:
+`TOP` action 方法可以简化为:
 
     method TOP($/) {
         make $<query>.ast;
     }
 
-## keylist and pairlist
+## keylist 和 pairlist
 
+这两个是无聊的 action 方法, 包含完成
 These are two boring action methods, included for completeness.
 
     method pairlist($/) {
@@ -994,8 +983,7 @@ These are two boring action methods, included for completeness.
 
 ## Interpreting a query
 
-So how do we ever run the query? Well, here's the action method for `INSERT`
-queries:
+So how do we ever run the query? 好吧, 这儿是  `INSERT` 查询的 action 方法:
 
     method query:sym<insert>($/) {
         my %to_insert := $<pairlist>.ast;
@@ -1005,11 +993,12 @@ queries:
         };
     }
 
+这儿, 代替数据结构, 我们 `make` 了一个闭包来接收当前数据库状态(一个散列的数组, 其中每一个散列是一行)并把由 `pairlist` action 方法产生的散列推到那个数组中。
 Here, instead of a data structure, we `make` a closure that takes the current
 database state (an array of hashes, where each hash is a row) and push the
 hash produced by the `pairlist` action method onto it.
 
-## The SlowDB class itself
+## SlowDB 类自身
 
     class SlowDB {
         has @!data;
@@ -1034,37 +1023,33 @@ hash produced by the `pairlist` action method onto it.
 
 ## Exercise 3
 
+一次练习 protoregexes 的机会并自己学习我们已经复习过的。
 A chance to practice with protoregexes a bit, and study for yourself what we
 have been looking through.
 
-Take the SlowDB example that we have been considering. Add support for the
-`UPDATE` and `DELETE` queries.
+拿 SlowDB 这个我们已经思考过的例子来说。给这个例子添加 `UPDATE` 和 `DELETE` 查询支持。
 
-## Limitations and other differences from full Perl 6
 
-Here's an assortment of other things worth knowing.
+## 限制和与完整 Perl 6 的其它区别
+
+这儿有一个值得了解的其它事情的杂烩。
 
 * There is a `use` statement, but it expects anything that it uses to have
   been pre-compiled already.
-* There is no array flattening; `[@a, @b]` is always an array of 2 elements
-* The hash composer `{}` only works for empty hashes; anything other than that
-  will be treated as a block
+* 没有数组展平; `[@a, @b]` 总是两个元素的数组
+* 散列构造 `{}` 符只对空散列有效; 除了它之外的任何一个 `{}` 都会被当作一个 block
 * `BEGIN` blocks exist but are highly constrained in what they can see in the
   outer scope (only types, not variables)
 
-## Backend differences
+## 后端的区别
 
-NQP on JVM and MoarVM are relatively consistent. NQP on Parrot is the odd one
-out: not everything is a 6model object. That is, while `.WHAT` or `.HOW` will
-work on anything in NQP on JVM and MoarVM, it may fail on Parrot. This happens
-on integer, number and string literals, arrays and hashes, exceptions and some
-kinds of code object.
+JVM 和 MoarVM 上的 NQP 相对比较一致。Parrot 上的 NQP 有点古怪: 不是所有的东西都是 6model 对象。即虽然在 JVM 和 MoarVM 上, NQP  中的 `.WHAT` 或 `.HOW` 会工作良好, 但是在 Parrot 上它会失败。这发生在整数, 数字和字符串字面值, 数组和散列, 异常和某些种类的代码对象身上。 
 
 Exception handlers also work out a bit differently. Those on JVM and MoarVM
 run on the stack top at the point of the exception throw, as is the Perl 6
 semantics. Those in NQP on Parrot will unwind then run, with resumption being
 provided by a continuation. Note that Rakudo is consistent on this on all
-backends.
+ backends.
 
 ## Overall...
 
@@ -1078,11 +1063,11 @@ The grammars and action method material we have covered is perhaps the most
 important, as this is the starting point for understanding how NQP and Perl 6
 are compiled.
 
-# The compilation pipeline
+# 编译管道
 
-*Stage by stage, we compile the program...*
+*一步一步我们编译完了那个程序...*
 
-## From start to finish
+## 从开始到完成
 
 Now we know a bit about NQP as a language, it's time to dive under the covers
 and see what happens when we feed NQP a program to run.
@@ -1100,6 +1085,8 @@ We'll choose the JVM backend to examine this.
 We can get an insight into what is going on inside of NQP by running it with
 the `--stagestats` option, which shows the times for each of the stages that
 the compiler goes through.
+
+nqp --stagestats -e "say('Hello, world')"
 
     Stage start      :   0.000      # Startup
     Stage classname  :   0.010      # Compute classname
